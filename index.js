@@ -32,6 +32,38 @@ const client = new MongoClient(uri, {
 
 
 
+// get token from backend 
+const JWKS = createRemoteJWKSet(
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+);
+
+
+// middleware for authentication
+const middleware = async (req, res, next) => {
+    // receiving token from client side
+    const authHeader = req?.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const token = authHeader?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // verify token with jose-cjs
+    try {
+        const { payload } = await jwtVerify(token, JWKS);
+        console.log(payload);
+        next();
+
+    } catch (error) {
+        return res.status(403).json({ message: "Forbidden" });
+    }
+};
+
+
+
 async function run() {
     try {
         await client.connect();
@@ -40,7 +72,7 @@ async function run() {
         const petsCollection = db.collection("pets");
         const usersCollection = db.collection("users");
 
-        app.get('/pets',
+        app.get('/pets', middleware,
             async (req, res) => {
                 const result = await petsCollection.find({}).toArray();
                 res.json(result);
