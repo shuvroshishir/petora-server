@@ -36,7 +36,25 @@ async function run() {
     try {
         await client.connect();
 
+        const db = client.db("petora");
+        const petsCollection = db.collection("pets");
+        const usersCollection = db.collection("users");
 
+        app.get('/pets',
+            async (req, res) => {
+                const result = await petsCollection.find({}).toArray();
+                res.json(result);
+            }
+        );
+
+        app.post('/pets',
+            async (req, res) => {
+                const petData = req.body;
+
+                const result = await petsCollection.insertOne(petData);
+                res.json(result);
+            }
+        );
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
