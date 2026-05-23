@@ -6,7 +6,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const express = require('express')
 const dotenv = require('dotenv')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 // initializing express app and dotenv
@@ -37,7 +37,6 @@ const JWKS = createRemoteJWKSet(
     new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 );
 
-
 // middleware for authentication
 const middleware = async (req, res, next) => {
     // receiving token from client side
@@ -54,7 +53,6 @@ const middleware = async (req, res, next) => {
     // verify token with jose-cjs
     try {
         const { payload } = await jwtVerify(token, JWKS);
-        console.log(payload);
         next();
 
     } catch (error) {
@@ -72,9 +70,18 @@ async function run() {
         const petsCollection = db.collection("pets");
         const usersCollection = db.collection("users");
 
-        app.get('/pets', middleware,
+        app.get('/pets',
             async (req, res) => {
                 const result = await petsCollection.find({}).toArray();
+                res.json(result);
+            }
+        );
+
+        app.get('/pets/:id',
+            async (req, res) => {
+                const { id } = req.params;
+
+                const result = await petsCollection.findOne({ _id: new ObjectId(id) });
                 res.json(result);
             }
         );
