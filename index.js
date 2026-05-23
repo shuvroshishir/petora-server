@@ -68,7 +68,7 @@ async function run() {
 
         const db = client.db("petora");
         const petsCollection = db.collection("pets");
-        const usersCollection = db.collection("users");
+        const adoptionsCollection = db.collection("adoptions");
 
         app.get('/pets',
             async (req, res) => {
@@ -77,7 +77,7 @@ async function run() {
             }
         );
 
-        app.get('/pets/:id',
+        app.get('/pets/:id', middleware,
             async (req, res) => {
                 const { id } = req.params;
 
