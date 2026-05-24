@@ -53,6 +53,9 @@ const middleware = async (req, res, next) => {
     // verify token with jose-cjs
     try {
         const { payload } = await jwtVerify(token, JWKS);
+
+        req.user = payload;
+
         next();
 
     } catch (error) {
@@ -70,6 +73,8 @@ async function run() {
         const petsCollection = db.collection("pets");
         const adoptionsCollection = db.collection("adoptions");
 
+
+        // Pets collection
         app.get('/pets',
             async (req, res) => {
                 const result = await petsCollection.find({}).toArray();
@@ -86,6 +91,18 @@ async function run() {
             }
         );
 
+
+        // my listings
+        app.get('/my-listings', middleware,
+            async (req, res) => {
+                const email = req.user.email;
+
+                const result = await petsCollection.find({ ownerEmail: email }).toArray();
+                res.json(result);
+            }
+        );
+
+
         app.post('/pets', middleware,
             async (req, res) => {
                 const petData = req.body;
@@ -96,7 +113,14 @@ async function run() {
         );
 
 
+
         // Adoptions Collection
+        app.get('/adoptions', middleware,
+            async (req, res) => {
+                const result = await adoptionsCollection.find({}).toArray();
+                res.json(result);
+            }
+        );
 
         app.post('/adoptions', middleware,
             async (req, res) => {
