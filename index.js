@@ -86,7 +86,7 @@ async function run() {
             }
         );
 
-        app.post('/pets',
+        app.post('/pets', middleware,
             async (req, res) => {
                 const petData = req.body;
 
@@ -94,6 +94,20 @@ async function run() {
                 res.json(result);
             }
         );
+
+
+        // Adoptions Collection
+
+        app.post('/adoptions', middleware,
+            async (req, res) => {
+                const adoptionData = req.body;
+
+                const result = await adoptionsCollection.insertOne(adoptionData);
+                res.json(result);
+            }
+        );
+
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
