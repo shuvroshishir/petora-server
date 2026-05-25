@@ -175,6 +175,15 @@ async function run() {
             }
         );
 
+        app.delete('/adoptions/:id', middleware,
+            async (req, res) => {
+                const { id } = req.params;
+
+                const result = await adoptionsCollection.deleteOne({ _id: new ObjectId(id) });
+                res.json(result);
+            }
+        );
+
 
 
         await client.db("admin").command({ ping: 1 });
