@@ -112,6 +112,27 @@ async function run() {
             }
         );
 
+        app.patch('/pets/:id', middleware,
+            async (req, res) => {
+                const { id } = req.params;
+                const updatedData = req.body;
+
+                const result = await petsCollection.updateOne(
+                    { _id: new ObjectId(id) },  //detect - jeta update korbo
+                    { $set: updatedData }  //notun data 
+                );
+                res.json(result);
+            }
+        );
+
+        app.delete('/pets/:id', middleware,
+            async (req, res) => {
+                const { id } = req.params;
+
+                const result = await petsCollection.deleteOne({ _id: new ObjectId(id) });
+                res.json(result);
+            }
+        );
 
 
         // Adoptions Collection
