@@ -143,6 +143,29 @@ async function run() {
             }
         );
 
+        // my requests
+        app.get('/my-requests', middleware,
+            async (req, res) => {
+                const email = req.user.email;
+
+                const result = await adoptionsCollection.find({ adopterEmail: email }).toArray();
+                res.json(result);
+            }
+        );
+
+        app.get("/adoptions/existing",
+            async (req, res) => {
+                const { petId, email } = req.query;
+
+                const existingRequest = await adoptionsCollection.findOne({
+                    petId,
+                    adopterEmail: email,
+                });
+
+                res.json(existingRequest);
+            }
+        );
+
         app.post('/adoptions', middleware,
             async (req, res) => {
                 const adoptionData = req.body;
