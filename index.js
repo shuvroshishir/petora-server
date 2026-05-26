@@ -200,6 +200,85 @@ async function run() {
 
 
 
+
+
+        // request approve
+        app.patch("/adoptions/approve/:id", middleware,
+            async (req, res) => {
+
+                const id = req.params.id;
+
+                // find selected request person
+                const adoption = await adoptionsCollection.findOne({
+                    _id: new ObjectId(id),
+                });
+
+                // update status = approve 
+                await adoptionsCollection.updateOne(
+                    { _id: new ObjectId(id), },
+                    {
+                        $set: {
+                            status: "approved",
+                        },
+                    }
+                );
+
+                // reject other requests
+                await adoptionsCollection.updateMany(
+                    {
+                        petId: adoption.petId,
+
+                        _id: {
+                            $ne: new ObjectId(id),
+                        },
+                    },
+                    {
+                        $set: {
+                            status: "rejected",
+                        },
+                    }
+                );
+
+                // mark pet adopted
+                await petsCollection.updateOne(
+                    { _id: new ObjectId(adoption.petId), },
+                    {
+                        $set: {
+                            adoptionStatus:
+                                "adopted",
+                        },
+                    }
+                );
+
+                res.json({
+                    success: true,
+                });
+            }
+        );
+
+
+        // request reject
+        app.patch("/adoptions/reject/:id", middleware,
+            async (req, res) => {
+
+                const id = req.params.id;
+
+                const result =
+                    await adoptionsCollection.updateOne(
+                        { _id: new ObjectId(id), },
+                        {
+                            $set: {
+                                status: "rejected",
+                            },
+                        }
+                    );
+
+                res.json(result);
+            }
+        );
+
+
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
