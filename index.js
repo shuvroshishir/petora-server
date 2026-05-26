@@ -135,13 +135,26 @@ async function run() {
         );
 
 
-        // Adoptions Collection
+
+
+        // Adoptions Collection ---------------->
         app.get('/adoptions', middleware,
             async (req, res) => {
                 const result = await adoptionsCollection.find({}).toArray();
                 res.json(result);
             }
         );
+
+        // pet's all requests
+        app.get("/adoptions/pet/:petId", middleware,
+            async (req, res) => {
+                const petId = req.params.petId;
+
+                const requests = await adoptionsCollection.find({ petId }).toArray();
+                res.json(requests);
+            }
+        );
+
 
         // my requests
         app.get('/my-requests', middleware,
@@ -153,6 +166,7 @@ async function run() {
             }
         );
 
+        // is adoption request already submit
         app.get("/adoptions/existing",
             async (req, res) => {
                 const { petId, email } = req.query;
