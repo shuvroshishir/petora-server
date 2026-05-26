@@ -75,12 +75,51 @@ async function run() {
 
 
         // Pets collection
-        app.get('/pets',
-            async (req, res) => {
-                const result = await petsCollection.find({}).toArray();
-                res.json(result);
+        app.get("/pets", async (req, res) => {
+
+            const { search, species, sort } = req.query;
+
+            const query = {};
+
+            // Search by pet name
+            if (search) {
+                query.petName = {
+                    $regex: search,
+                    $options: "i",
+                };
             }
-        );
+
+            // Filter by species
+            if (species) {
+                query.species = {
+                    $in: [species],
+                };
+            }
+
+            // Sorting
+            let sortOption = {};
+
+            if (sort === "LowToHigh") {
+                sortOption = {
+                    adoptionFee: 1,
+                };
+            }
+
+            else if (sort === "HighToLow") {
+                sortOption = {
+                    adoptionFee: -1,
+                };
+            }
+
+            const result = await petsCollection
+                .find(query)
+                .sort(sortOption)
+                .toArray();
+
+            res.json(result);
+        });
+
+
 
         app.get('/pets/:id', middleware,
             async (req, res) => {
